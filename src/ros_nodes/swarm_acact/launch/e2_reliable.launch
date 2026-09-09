@@ -1,0 +1,50 @@
+<launch>
+  <!-- Experiment E2: Baseline RELIABLE (4 UAVs, All delays = 0.20s) -->
+  <group ns="uav1">
+    <node pkg="swarm_acact" type="uav_node.py" name="uav_1" output="screen">
+      <param name="uav_id" value="1"/>
+      <param name="total_uavs" value="4"/>
+      <param name="start_x" value="0.0"/>
+      <param name="start_y" value="0.0"/>
+      <param name="goal_x" value="10.0"/>
+      <param name="goal_y" value="10.0"/>
+      <param name="network_delay" value="0.20"/>
+    </node>
+  </group>
+
+  <group ns="uav2">
+    <node pkg="swarm_acact" type="uav_node.py" name="uav_2" output="screen">
+      <param name="uav_id" value="2"/>
+      <param name="total_uavs" value="4"/>
+      <param name="start_x" value="10.0"/>
+      <param name="start_y" value="0.0"/>
+      <param name="goal_x" value="0.0"/>
+      <param name="goal_y" value="10.0"/>
+      <param name="network_delay" value="0.20"/>
+    </node>
+  </group>
+
+  <group ns="uav3">
+    <node pkg="swarm_acact" type="uav_node.py" name="uav_3" output="screen">
+      <param name="uav_id" value="3"/>
+      <param name="total_uavs" value="4"/>
+      <param name="start_x" value="10.0"/>
+      <param name="start_y" value="10.0"/>
+      <param name="goal_x" value="0.0"/>
+      <param name="goal_y" value="0.0"/>
+      <param name="network_delay" value="0.20"/>
+    </node>
+  </group>
+
+  <group ns="uav4">
+    <node pkg="swarm_acact" type="uav_node.py" name="uav_4" output="screen">
+      <param name="uav_id" value="4"/>
+      <param name="total_uavs" value="4"/>
+      <param name="start_x" value="0.0"/>
+      <param name="start_y" value="10.0"/>
+      <param name="goal_x" value="10.0"/>
+      <param name="goal_y" value="0.0"/>
+      <param name="network_delay" value="0.20"/>
+    </node>
+  </group>
+</launch>

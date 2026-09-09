@@ -1,0 +1,8 @@
+# 10-Iris Drone Formation Configuration (Paper 1)
+formation:
+  type: "circular_rotating"
+  total_drones: 10
+  leader_id: 0
+  radius: 6.0
+  rotation_direction: "counterclockwise"
+  cruising_speed: 2.5

@@ -1,0 +1,16 @@
+# Default Configuration for Paper 1 (ACACT)
+controller:
+  name: "ACACT"
+  k_pa: 1.0       # Attractive force proportional gain
+  k_pp: 1.5       # Repulsive force proportional gain
+  k_pv: 0.3       # Dynamic velocity normal force gain
+  k_ip: 0.1       # Integral gain
+  k_dp: 0.4       # Derivative gain
+  t_s: 2.0        # Expected collision safety time threshold (s)
+  r_ref: 1.5      # Oscillation cancellation radius (m)
+
+uav_physical:
+  v_max: 3.0           # Maximum operational velocity (m/s)
+  sensing_radius: 7.0   # Sensor detection range r_s (m)
+  collision_radius: 2.0 # Collision risk zone threshold (m)
+  physical_radius: 0.5  # Physical footprint (m)

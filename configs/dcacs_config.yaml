@@ -1,0 +1,8 @@
+# Configuration for Paper 2 (DCACS)
+communication:
+  protocol: "DCACS"
+  delay_threshold: 0.1      # delta (s)
+  congestion_threshold: 3   # gamma (neighbors)
+  fast_loss_rate: 0.2       # 20% Bernoulli packet loss in FAST mode
+  control_rate_hz: 10.0     # 10 Hz control loop
+  t_s_base: 0.5             # Base safety threshold (s)

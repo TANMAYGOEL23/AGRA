@@ -52,5 +52,38 @@ class TestCommunication(unittest.TestCase):
             self.assertEqual(u.comm_mode, "RELIABLE")
             self.assertEqual(u.packet_loss_prob, 0.0)
 
+    def test_fps_sctp_graded_retransmission(self):
+        from src.communication.fps_sctp import FPSSCTPChannel
+        cfg1 = UAVConfig(uav_id=1, network_delay=0.04)
+        cfg2 = UAVConfig(uav_id=2, network_delay=0.04)
+        u1 = UAV(cfg1, np.array([0.0, 0.0, 0.0]), np.array([10.0, 10.0, 0.0]))
+        u2 = UAV(cfg2, np.array([2.0, 2.0, 0.0]), np.array([0.0, 0.0, 0.0])) # Close proximity -> high urgency
+        
+        channel = FPSSCTPChannel(base_rtt=0.04, channel_loss_rate=0.0, enable_lmf=True)
+        channel.update_uav_communication([u1, u2], current_time=0.0, dt=0.05)
+        
+        # Advance time to allow delivery
+        channel.update_uav_communication([u1, u2], current_time=0.06, dt=0.05)
+        
+        self.assertIn(2, u1.perceived_neighbors)
+        self.assertGreater(u1.perceived_neighbors[2]['urgency'], 0.5)
+
+    def test_fps_sctp_late_messages_filter(self):
+        from src.communication.fps_sctp import FPSSCTPChannel
+        cfg1 = UAVConfig(uav_id=1)
+        cfg2 = UAVConfig(uav_id=2)
+        # Position UAVs close (distance < 2.5m) so urgency > 0.75 and rtx_quota = 2
+        u1 = UAV(cfg1, np.array([0.0, 0.0, 0.0]), np.array([10.0, 10.0, 0.0]))
+        u2 = UAV(cfg2, np.array([1.5, 1.5, 0.0]), np.array([0.0, 0.0, 0.0]))
+        
+        # 100% loss channel with high RTT to force LMF drop upon retransmission
+        channel = FPSSCTPChannel(base_rtt=0.50, channel_loss_rate=1.0, default_pdb=0.10, enable_lmf=True)
+        channel.update_uav_communication([u1, u2], current_time=0.0, dt=0.05)
+        
+        # Advance past RTT
+        channel.update_uav_communication([u1, u2], current_time=0.60, dt=0.05)
+        stats = channel.get_stats()
+        self.assertGreater(stats['late_messages_filtered'], 0)
+
 if __name__ == '__main__':
     unittest.main()

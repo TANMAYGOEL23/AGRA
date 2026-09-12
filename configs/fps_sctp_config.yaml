@@ -1,0 +1,10 @@
+# Configuration for FPS-SCTP & AGRA (Adaptive Graded Retransmission)
+fps_sctp:
+  protocol: "FPS-SCTP"
+  base_rtt: 0.04                # Base smoothed Round-Trip Time (s)
+  channel_loss_rate: 0.15       # 15% random packet loss rate on wireless link
+  enable_lmf: true              # Enable Late Messages Filter (timeliness over stale retransmission)
+  default_pdb: 0.30             # Default Packet Delay Budget (s)
+  max_retransmissions: 2        # Maximum retransmission attempts for critical urgency packets
+  urgency_threshold_high: 0.75  # C_n threshold for 2 retransmissions + high-priority stream
+  urgency_threshold_med: 0.40   # C_n threshold for 1 retransmission

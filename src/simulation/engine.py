@@ -116,4 +116,4 @@ class SimulationEngine:
         self.reset()
         while not self.is_finished:
             self.step()
-        return calculate_swarm_summary(self.uavs, self.current_time)
+        return calculate_swarm_summary(self.uavs, self.current_time, self.channel.get_stats())

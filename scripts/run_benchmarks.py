@@ -113,12 +113,60 @@ def run_paper1_all_scenarios():
     SimulationLogger.export_results_json(form_summary, "results/json/paper1_formation_acact.json")
     PaperPlotGenerator.plot_paper1_trajectories({"ACACT_Formation": form_scenario.uavs}, "results/plots/paper1_formation_trajectories.png")
 
+def run_fps_sctp_benchmarks():
+    print("\n" + "=" * 80)
+    print(" EXECUTING FPS-SCTP & AGRA BENCHMARKS (vs DCACS BASELINE) ")
+    print("=" * 80)
+    
+    from src.communication.fps_sctp import FPSSCTPChannel
+    from src.communication.dcacs import DCACSChannel
+    
+    scenarios_to_test = ["E3", "E4"]
+    comparison_results = {}
+    
+    for sc_id in scenarios_to_test:
+        print(f"\n>>> Benchmarking Scenario {sc_id} with DCACS vs FPS-SCTP / AGRA <<<")
+        
+        # 1. Run DCACS
+        sc_dcacs = ScenarioFactory.create_paper2_experiment(sc_id)
+        chan_dcacs = DCACSChannel()
+        eng_dcacs = SimulationEngine(sc_dcacs, ACACTController(t_s_base=0.5), chan_dcacs)
+        sum_dcacs = eng_dcacs.run_all()
+        SimulationLogger.print_experiment_results_table(sum_dcacs, exp_name=f"{sc_id} - DCACS Baseline")
+        
+        # 2. Run FPS-SCTP / AGRA
+        sc_sctp = ScenarioFactory.create_paper2_experiment(sc_id)
+        chan_sctp = FPSSCTPChannel(base_rtt=0.04, channel_loss_rate=0.15, enable_lmf=True)
+        eng_sctp = SimulationEngine(sc_sctp, ACACTController(t_s_base=0.5), chan_sctp)
+        sum_sctp = eng_sctp.run_all()
+        stats_sctp = chan_sctp.get_stats()
+        
+        SimulationLogger.print_experiment_results_table(sum_sctp, exp_name=f"{sc_id} - AGRA (FPS-SCTP + LMF)")
+        print(f"FPS-SCTP Telemetry ({sc_id}): Retransmissions={stats_sctp['retransmissions']} | Late Messages Filtered (LMF)={stats_sctp['late_messages_filtered']} | On-Time Deliveries={stats_sctp['on_time_deliveries']} | Data Volume={stats_sctp['bytes_transmitted_kb']} KB")
+        
+        comparison_results[f"DCACS_{sc_id}"] = {
+            "pttr": sum_dcacs["mean_pttr_paper2"],
+            "travel_time": sum_dcacs["mean_travel_time"],
+            "retransmissions": 0,
+            "late_filtered": 0
+        }
+        comparison_results[f"FPS_SCTP_{sc_id}"] = {
+            "pttr": sum_sctp["mean_pttr_paper2"],
+            "travel_time": sum_sctp["mean_travel_time"],
+            "retransmissions": stats_sctp['retransmissions'],
+            "late_filtered": stats_sctp['late_messages_filtered']
+        }
+        
+    PaperPlotGenerator.plot_fps_sctp_comparison(comparison_results, "results/plots/fps_sctp_agra_comparison.png")
+    return comparison_results
+
 def main():
     print("\n================================================================================")
-    print(" >>> FULL BENCHMARK SUITE: PAPER 1 (ACACT) & PAPER 2 (DCACS) REPRODUCTION <<< ")
+    print(" >>> FULL BENCHMARK SUITE: PAPER 1, PAPER 2 (DCACS) & AGRA (FPS-SCTP) <<< ")
     print("================================================================================\n")
     p2_results = run_paper2_experiments()
     p1_results = run_paper1_all_scenarios()
+    sctp_results = run_fps_sctp_benchmarks()
     print("\n" + "=" * 80)
     print(" ALL BENCHMARKS COMPLETED!")
     print(" Tables printed to stdout.")

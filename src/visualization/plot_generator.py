@@ -130,3 +130,160 @@ class PaperPlotGenerator:
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         plt.close()
         print(f"[PlotGenerator] Saved Paper 2 experiments summary: {save_path}")
+
+    @staticmethod
+    def plot_fps_sctp_comparison(
+        comparison_results: Dict[str, Dict[str, Any]],
+        save_path: str = "results/plots/fps_sctp_agra_comparison.png"
+    ):
+        """
+        Generates 4-panel comparison between DCACS and FPS-SCTP / AGRA:
+        (a) PTTR, (b) Travel Time, (c) Retransmissions / Stale Packets Filtered, (d) Bandwidth Overhead.
+        """
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        protocols = list(comparison_results.keys())
+        
+        pttrs = [comparison_results[p]['pttr'] for p in protocols]
+        times = [comparison_results[p]['travel_time'] for p in protocols]
+        rtx_counts = [comparison_results[p].get('retransmissions', 0) for p in protocols]
+        filtered_counts = [comparison_results[p].get('late_filtered', 0) for p in protocols]
+        
+        fig, axes = plt.subplots(2, 2, figsize=(11, 8.5))
+        colors = ['#e67e22', '#2980b9', '#27ae60', '#8e44ad']
+        
+        # (a) PTTR
+        axes[0, 0].bar(protocols, pttrs, color=colors[:len(protocols)], width=0.5)
+        axes[0, 0].set_title("(a) Swarm PTTR Score", fontweight='bold')
+        axes[0, 0].set_ylabel("PTTR")
+        axes[0, 0].grid(axis='y', linestyle='--', alpha=0.7)
+        
+        # (b) Travel Time
+        axes[0, 1].bar(protocols, times, color=colors[:len(protocols)], width=0.5)
+        axes[0, 1].set_title("(b) Travel Time (s)", fontweight='bold')
+        axes[0, 1].set_ylabel("Time (s)")
+        axes[0, 1].grid(axis='y', linestyle='--', alpha=0.7)
+        
+        # (c) Retransmissions
+        axes[1, 0].bar(protocols, rtx_counts, color='#c0392b', width=0.5)
+        axes[1, 0].set_title("(c) Total Retransmissions", fontweight='bold')
+        axes[1, 0].set_ylabel("Packets")
+        axes[1, 0].grid(axis='y', linestyle='--', alpha=0.7)
+        
+        # (d) Late Messages Filtered (LMF)
+        axes[1, 1].bar(protocols, filtered_counts, color='#16a085', width=0.5)
+        axes[1, 1].set_title("(d) Late Stale Messages Filtered (LMF)", fontweight='bold')
+        axes[1, 1].set_ylabel("Filtered Packets")
+        axes[1, 1].grid(axis='y', linestyle='--', alpha=0.7)
+        
+        plt.suptitle("AGRA / FPS-SCTP vs DCACS Performance Comparison", fontsize=13, fontweight='bold')
+        plt.tight_layout()
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close()
+        print(f"[PlotGenerator] Saved FPS-SCTP / AGRA comparison charts: {save_path}")
+
+    @staticmethod
+    def plot_large_scale_benchmarks(
+        benchmark_data: List[Dict[str, Any]],
+        save_path: str = "results/plots/large_scale_dcacs_vs_fps_sctp.png"
+    ):
+        """
+        Plots comprehensive 6-panel scalability trends across swarm sizes (4 to 50 UAVs):
+        1. PTTR vs Swarm Size
+        2. Travel Time vs Swarm Size
+        3. Packet Loss Rate (%) vs Swarm Size
+        4. Total Retransmissions vs Swarm Size
+        5. Total Bandwidth Consumed (KB) vs Swarm Size
+        6. Total Battery / Energy (mAh / Joules) vs Swarm Size
+        """
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        
+        scenarios = [d['scenario'] for d in benchmark_data]
+        swarm_sizes = [d['swarm_size'] for d in benchmark_data]
+        
+        dcacs_pttr = [d['dcacs_pttr'] for d in benchmark_data]
+        fps_pttr = [d['fps_pttr'] for d in benchmark_data]
+        
+        dcacs_time = [d['dcacs_travel_time'] for d in benchmark_data]
+        fps_time = [d['fps_travel_time'] for d in benchmark_data]
+        
+        dcacs_loss = [d['dcacs_loss_rate'] for d in benchmark_data]
+        fps_loss = [d['fps_loss_rate'] for d in benchmark_data]
+        
+        dcacs_rtx = [d['dcacs_retransmissions'] for d in benchmark_data]
+        fps_rtx = [d['fps_retransmissions'] for d in benchmark_data]
+        
+        dcacs_bw = [d['dcacs_bandwidth_kb'] for d in benchmark_data]
+        fps_bw = [d['fps_bandwidth_kb'] for d in benchmark_data]
+        
+        dcacs_batt = [d['dcacs_battery_mah'] for d in benchmark_data]
+        fps_batt = [d['fps_battery_mah'] for d in benchmark_data]
+        
+        fig, axes = plt.subplots(3, 2, figsize=(14, 12))
+        x_indices = np.arange(len(scenarios))
+        w = 0.35
+        
+        # 1. PTTR
+        axes[0, 0].bar(x_indices - w/2, dcacs_pttr, w, label='DCACS (Baseline)', color='#e67e22')
+        axes[0, 0].bar(x_indices + w/2, fps_pttr, w, label='AGRA (FPS-SCTP)', color='#2980b9')
+        axes[0, 0].set_title('1. Swarm PTTR Score vs Swarm Size', fontweight='bold')
+        axes[0, 0].set_xticks(x_indices)
+        axes[0, 0].set_xticklabels([f"{s}\n({n}U)" for s, n in zip(scenarios, swarm_sizes)], fontsize=9)
+        axes[0, 0].set_ylabel('PTTR')
+        axes[0, 0].grid(axis='y', linestyle='--', alpha=0.7)
+        axes[0, 0].legend()
+        
+        # 2. Travel Time
+        axes[0, 1].plot(x_indices, dcacs_time, 'o--', label='DCACS', color='#e67e22', linewidth=2)
+        axes[0, 1].plot(x_indices, fps_time, 's-', label='FPS-SCTP', color='#2980b9', linewidth=2)
+        axes[0, 1].set_title('2. Mean Travel Time (s)', fontweight='bold')
+        axes[0, 1].set_xticks(x_indices)
+        axes[0, 1].set_xticklabels(scenarios)
+        axes[0, 1].set_ylabel('Time (s)')
+        axes[0, 1].grid(True, linestyle='--', alpha=0.7)
+        axes[0, 1].legend()
+        
+        # 3. Packet Loss Rate (%)
+        axes[1, 0].bar(x_indices - w/2, dcacs_loss, w, label='DCACS', color='#e74c3c')
+        axes[1, 0].bar(x_indices + w/2, fps_loss, w, label='FPS-SCTP', color='#27ae60')
+        axes[1, 0].set_title('3. Packet Loss Rate (PLR %)', fontweight='bold')
+        axes[1, 0].set_xticks(x_indices)
+        axes[1, 0].set_xticklabels(scenarios)
+        axes[1, 0].set_ylabel('Loss (%)')
+        axes[1, 0].grid(axis='y', linestyle='--', alpha=0.7)
+        axes[1, 0].legend()
+        
+        # 4. Retransmissions
+        axes[1, 1].bar(x_indices - w/2, dcacs_rtx, w, label='DCACS', color='#c0392b')
+        axes[1, 1].bar(x_indices + w/2, fps_rtx, w, label='FPS-SCTP (Graded LMF)', color='#16a085')
+        axes[1, 1].set_title('4. Total Retransmissions (Overhead)', fontweight='bold')
+        axes[1, 1].set_xticks(x_indices)
+        axes[1, 1].set_xticklabels(scenarios)
+        axes[1, 1].set_ylabel('Packets')
+        axes[1, 1].grid(axis='y', linestyle='--', alpha=0.7)
+        axes[1, 1].legend()
+        
+        # 5. Bandwidth Consumed (KB)
+        axes[2, 0].plot(x_indices, dcacs_bw, 'o--', label='DCACS', color='#e67e22', linewidth=2)
+        axes[2, 0].plot(x_indices, fps_bw, 's-', label='FPS-SCTP', color='#8e44ad', linewidth=2)
+        axes[2, 0].set_title('5. Total Swarm Bandwidth Consumed (KB)', fontweight='bold')
+        axes[2, 0].set_xticks(x_indices)
+        axes[2, 0].set_xticklabels([f"{s}\n({n}U)" for s, n in zip(scenarios, swarm_sizes)], fontsize=9)
+        axes[2, 0].set_ylabel('Bandwidth (KB)')
+        axes[2, 0].grid(True, linestyle='--', alpha=0.7)
+        axes[2, 0].legend()
+        
+        # 6. Battery / Energy Consumed (mAh)
+        axes[2, 1].plot(x_indices, dcacs_batt, 'o--', label='DCACS', color='#e67e22', linewidth=2)
+        axes[2, 1].plot(x_indices, fps_batt, 's-', label='FPS-SCTP', color='#2ecc71', linewidth=2)
+        axes[2, 1].set_title('6. Total Battery Consumed (mAh)', fontweight='bold')
+        axes[2, 1].set_xticks(x_indices)
+        axes[2, 1].set_xticklabels([f"{s}\n({n}U)" for s, n in zip(scenarios, swarm_sizes)], fontsize=9)
+        axes[2, 1].set_ylabel('Battery (mAh)')
+        axes[2, 1].grid(True, linestyle='--', alpha=0.7)
+        axes[2, 1].legend()
+        
+        plt.suptitle('Comprehensive Protocol Benchmark: DCACS vs. AGRA (FPS-SCTP) Scalability (4 to 50 UAVs)', fontsize=14, fontweight='bold')
+        plt.tight_layout()
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close()
+        print(f"[PlotGenerator] Saved Large-Scale Scalability Charts: {save_path}")

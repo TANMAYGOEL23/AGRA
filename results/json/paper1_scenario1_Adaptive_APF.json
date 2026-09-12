@@ -1,0 +1,44 @@
+{
+  "mean_travel_time": 4.47,
+  "mean_collision_time": 0.7,
+  "max_collision_time": 0.7,
+  "mean_trajectory_length": 9.71,
+  "mean_pttr_paper1": 0.5885,
+  "mean_pttr_paper2": 0.16195,
+  "per_uav": [
+    {
+      "uav_id": 1,
+      "name": "UAV_1",
+      "travel_time": 4.5,
+      "collision_time": 0.7,
+      "trajectory_length": 9.71,
+      "shortest_distance": 10.0,
+      "min_separation": 0.1,
+      "v_max": 3.0,
+      "assigned_delay": 0.0,
+      "final_comm_mode": "FAST",
+      "pttr_paper1": 0.5852,
+      "ttr": 0.7407,
+      "ctr": 0.1556,
+      "pttr_paper2": 0.16129,
+      "had_collision": true
+    },
+    {
+      "uav_id": 2,
+      "name": "UAV_2",
+      "travel_time": 4.45,
+      "collision_time": 0.7,
+      "trajectory_length": 9.7,
+      "shortest_distance": 10.0,
+      "min_separation": 0.1,
+      "v_max": 3.0,
+      "assigned_delay": 0.0,
+      "final_comm_mode": "FAST",
+      "pttr_paper1": 0.5918,
+      "ttr": 0.7491,
+      "ctr": 0.1573,
+      "pttr_paper2": 0.1626,
+      "had_collision": true
+    }
+  ]
+}
